@@ -1,221 +1,146 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enhanced Purchase Order System</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <style>
-        :root {
-            --primary-green: #7BA084;
-            --secondary-green: #466564;
-            --accent-orange: #E06841;
-            --neutral-gray: #D2D2D0;
-        }
+import React, { useState } from 'react';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-        }
+const PurchaseOrderSystem = () => {
+  const [currentPage, setCurrentPage] = useState('login');
+  const [userName, setUserName] = useState('');
+  const [selectedBranch, setSelectedBranch] = useState('');
 
-        body {
-            background-color: var(--neutral-gray);
-            padding: 20px;
-        }
+  const inventory = {
+    'Cups & Lids': [
+      { name: '9OZ', unit: 'Carton', quantityPerUnit: '500 Cups', orderPoint: 'Half Carton' },
+      { name: '12OZ', unit: 'Carton', quantityPerUnit: '500 Cups', orderPoint: 'Half Carton' },
+      { name: 'Lids 9OZ', unit: 'Carton', quantityPerUnit: '1000 Lids', orderPoint: 'Half Carton' }
+    ],
+    'Filters': [
+      { name: 'V60 Filters', unit: 'Box', quantityPerUnit: '100 Filters', orderPoint: '2 Boxes' },
+      { name: 'Chemex Filters', unit: 'Box', quantityPerUnit: '100 Filters', orderPoint: '2 Boxes' }
+    ],
+    'Cleaning Materials': [
+      { name: 'Sanitizer', unit: 'Bottle', quantityPerUnit: '1L', orderPoint: '2 Bottles' },
+      { name: 'Detergent', unit: 'Container', quantityPerUnit: '5L', orderPoint: '1 Container' }
+    ]
+  };
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background-color: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
-        }
+  const handleLogin = () => {
+    if (userName && selectedBranch) {
+      setCurrentPage('main');
+    }
+  };
 
-        header {
-            background-color: var(--primary-green);
-            color: white;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-        }
+  if (currentPage === 'login') {
+    return (
+      <Card className="w-full max-w-md mx-auto mt-8">
+        <CardHeader>
+          <CardTitle>Login</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <label>Branch</label>
+            <Select value={selectedBranch} onValueChange={setSelectedBranch}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select Branch" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="al-nafl">Al-Nafl</SelectItem>
+                <SelectItem value="aqiq">Aqiq</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="space-y-2">
+            <label>User Name</label>
+            <Input 
+              type="text" 
+              value={userName}
+              onChange={(e) => setUserName(e.target.value)}
+              placeholder="Enter your name"
+            />
+          </div>
+          
+          <Button onClick={handleLogin} className="w-full">
+            Login
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
-        .section {
-            margin-bottom: 30px;
-            border: 1px solid var(--neutral-gray);
-            padding: 20px;
-            border-radius: 8px;
-        }
+  return (
+    <div className="container mx-auto p-4">
+      <Tabs defaultValue="purchase">
+        <TabsList className="mb-4">
+          <TabsTrigger value="purchase">Purchase Order</TabsTrigger>
+          <TabsTrigger value="inventory">Inventory</TabsTrigger>
+        </TabsList>
 
-        .section h2 {
-            color: var(--secondary-green);
-            margin-bottom: 15px;
-        }
+        <TabsContent value="purchase">
+          <Card>
+            <CardHeader>
+              <CardTitle>Purchase Order Form</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <section>
+                  <h3 className="text-lg font-semibold">Branch Information</h3>
+                  <p>Branch: {selectedBranch}</p>
+                  <p>User: {userName}</p>
+                </section>
 
-        .item-list {
-            list-style: none;
-        }
+                {['Equipment', 'Consumables', 'Office Supplies'].map((section) => (
+                  <section key={section} className="border p-4 rounded">
+                    <h3 className="text-lg font-semibold">{section}</h3>
+                    <Button variant="outline" size="sm" className="mt-2">
+                      Add {section.slice(0, -1)}
+                    </Button>
+                  </section>
+                ))}
 
-        .item {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            background-color: #f9f9f9;
-            margin-bottom: 10px;
-            border-radius: 5px;
-        }
+                <Button 
+                  onClick={() => {
+                    // Here you would generate PDF and share to WhatsApp
+                    window.open('https://chat.whatsapp.com/Fyoa3jnYx1ZERYB90DkVRX', '_blank');
+                  }}
+                  className="w-full"
+                >
+                  Generate & Share on WhatsApp
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-        .item input {
-            margin-right: 10px;
-            padding: 5px;
-            border: 1px solid var(--neutral-gray);
-            border-radius: 4px;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.3s;
-        }
-
-        .btn-add {
-            background-color: var(--primary-green);
-            color: white;
-            margin: 10px 0;
-        }
-
-        .btn-remove {
-            background-color: var(--accent-orange);
-            color: white;
-            margin-left: 10px;
-        }
-
-        .btn-submit {
-            background-color: var(--secondary-green);
-            color: white;
-            font-size: 16px;
-            padding: 15px 30px;
-            display: block;
-            margin: 30px auto;
-        }
-
-        .btn:hover {
-            opacity: 0.9;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <header>
-            <h1>Purchase Order System</h1>
-        </header>
-
-        <div id="purchaseOrder">
-            <div class="section">
-                <h2>Branch Information</h2>
-                <input type="text" id="branchName" placeholder="Branch Name" style="width: 100%; padding: 10px; margin-bottom: 10px;">
-            </div>
-
-            <div class="section">
-                <h2>Equipment</h2>
-                <ul id="equipmentList" class="item-list">
-                    <li class="item">
-                        <input type="text" placeholder="Equipment Name">
-                        <input type="number" placeholder="Quantity">
-                        <button class="btn btn-remove" onclick="removeItem(this)">Remove</button>
-                    </li>
-                </ul>
-                <button class="btn btn-add" onclick="addItem('equipmentList')">Add Equipment</button>
-            </div>
-
-            <div class="section">
-                <h2>Consumables</h2>
-                <ul id="consumablesList" class="item-list">
-                    <li class="item">
-                        <input type="text" placeholder="Consumable Name">
-                        <input type="number" placeholder="Quantity">
-                        <button class="btn btn-remove" onclick="removeItem(this)">Remove</button>
-                    </li>
-                </ul>
-                <button class="btn btn-add" onclick="addItem('consumablesList')">Add Consumable</button>
-            </div>
-
-            <div class="section">
-                <h2>Office Supplies</h2>
-                <ul id="suppliesList" class="item-list">
-                    <li class="item">
-                        <input type="text" placeholder="Supply Name">
-                        <input type="number" placeholder="Quantity">
-                        <button class="btn btn-remove" onclick="removeItem(this)">Remove</button>
-                    </li>
-                </ul>
-                <button class="btn btn-add" onclick="addItem('suppliesList')">Add Supply</button>
-            </div>
-
-            <button class="btn btn-submit" onclick="generateAndSharePDF()">Generate & Share on WhatsApp</button>
-        </div>
+        <TabsContent value="inventory">
+          <Card>
+            <CardHeader>
+              <CardTitle>Inventory</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {Object.entries(inventory).map(([category, items]) => (
+                <div key={category} className="mb-6">
+                  <h3 className="text-lg font-semibold mb-2">{category}</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {items.map((item) => (
+                      <Card key={item.name} className="p-4">
+                        <h4 className="font-medium">{item.name}</h4>
+                        <p>Unit: {item.unit}</p>
+                        <p>Quantity per Unit: {item.quantityPerUnit}</p>
+                        <p>Order Point: {item.orderPoint}</p>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
+  );
+};
 
-    <script>
-        function addItem(listId) {
-            const list = document.getElementById(listId);
-            const newItem = document.createElement('li');
-            newItem.className = 'item';
-            newItem.innerHTML = `
-                <input type="text" placeholder="Item Name">
-                <input type="number" placeholder="Quantity">
-                <button class="btn btn-remove" onclick="removeItem(this)">Remove</button>
-            `;
-            list.appendChild(newItem);
-        }
-
-        function removeItem(button) {
-            const item = button.parentElement;
-            const list = item.parentElement;
-            if (list.children.length > 1) {
-                list.removeChild(item);
-            }
-        }
-
-        function generateAndSharePDF() {
-            const { jsPDF } = window.jspdf;
-            const branchName = document.getElementById('branchName').value || 'Branch';
-            const date = new Date().toISOString().split('T')[0];
-            const fileName = `${branchName}_PO_${date}.pdf`;
-
-            html2canvas(document.getElementById('purchaseOrder')).then(canvas => {
-                const imgData = canvas.toDataURL('image/png');
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                const imgProps = pdf.getImageProperties(imgData);
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-                
-                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-                
-                // Convert PDF to blob
-                const pdfBlob = pdf.output('blob');
-                const pdfUrl = URL.createObjectURL(pdfBlob);
-                
-                // Create WhatsApp share link
-                const whatsappGroup = 'https://chat.whatsapp.com/Fyoa3jnYx1ZERYB90DkVRX';
-                const shareText = encodeURIComponent(`Purchase Order from ${branchName}`);
-                
-                // Open WhatsApp in new window
-                window.open(`https://api.whatsapp.com/send?text=${shareText}&chat=${whatsappGroup}`);
-                
-                // Also trigger PDF download
-                const link = document.createElement('a');
-                link.href = pdfUrl;
-                link.download = fileName;
-                link.click();
-            });
-        }
-    </script>
-</body>
-</html>
+export default PurchaseOrderSystem;

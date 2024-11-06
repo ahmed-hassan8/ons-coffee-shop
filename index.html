@@ -16,9 +16,19 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
         
+        body {
+            background-color: #7BA084; /* Brand background color */
+        }
         [lang="ar"] {
             font-family: 'Cairo', sans-serif;
             direction: rtl;
+        }
+        .custom-btn {
+            background-color: #466564; /* Brand button color */
+            color: white;
+        }
+        .custom-btn:hover {
+            background-color: #374F4D;
         }
     </style>
 </head>
@@ -26,7 +36,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState } = React;
 
         // Translations object
         const translations = {
@@ -96,86 +106,7 @@
                     photo: "https://via.placeholder.com/150"
                 }
             ],
-            filters: [
-                {
-                    id: 3,
-                    name: { en: "Coffee Filter", ar: "فلتر قهوة" },
-                    code: "CF1",
-                    unit: { en: "Box", ar: "صندوق" },
-                    quantityPerUnit: 20,
-                    orderPoint: 50,
-                    photo: "https://via.placeholder.com/150"
-                },
-                {
-                    id: 4,
-                    name: { en: "Tea Filter", ar: "فلتر شاي" },
-                    code: "TF1",
-                    unit: { en: "Box", ar: "صندوق" },
-                    quantityPerUnit: 25,
-                    orderPoint: 60,
-                    photo: "https://via.placeholder.com/150"
-                }
-            ],
-            cleaning: [
-                {
-                    id: 5,
-                    name: { en: "Cleaning Cloth", ar: "قماش تنظيف" },
-                    code: "CC1",
-                    unit: { en: "Roll", ar: "لفة" },
-                    quantityPerUnit: 10,
-                    orderPoint: 30,
-                    photo: "https://via.placeholder.com/150"
-                },
-                {
-                    id: 6,
-                    name: { en: "Disinfectant Spray", ar: "رذاذ مطهر" },
-                    code: "DS1",
-                    unit: { en: "Bottle", ar: "زجاجة" },
-                    quantityPerUnit: 15,
-                    orderPoint: 40,
-                    photo: "https://via.placeholder.com/150"
-                }
-            ],
-            beverages: [
-                {
-                    id: 7,
-                    name: { en: "Coffee Beans", ar: "حبوب قهوة" },
-                    code: "CB1",
-                    unit: { en: "Bag", ar: "كيس" },
-                    quantityPerUnit: 20,
-                    orderPoint: 50,
-                    photo: "https://via.placeholder.com/150"
-                },
-                {
-                    id: 8,
-                    name: { en: "Tea Leaves", ar: "أوراق شاي" },
-                    code: "TL1",
-                    unit: { en: "Bag", ar: "كيس" },
-                    quantityPerUnit: 25,
-                    orderPoint: 60,
-                    photo: "https://via.placeholder.com/150"
-                }
-            ],
-            maintenance: [
-                {
-                    id: 9,
-                    name: { en: "Screwdriver Set", ar: "مجموعة أدوات" },
-                    code: "SD1",
-                    unit: { en: "Set", ar: "مجموعة" },
-                    quantityPerUnit: 5,
-                    orderPoint: 10,
-                    photo: "https://via.placeholder.com/150"
-                },
-                {
-                    id: 10,
-                    name: { en: "Wrench", ar: "مفتاح" },
-                    code: "WR1",
-                    unit: { en: "Piece", ar: "قطعة" },
-                    quantityPerUnit: 10,
-                    orderPoint: 20,
-                    photo: "https://via.placeholder.com/150"
-                }
-            ]
+            // Add sample data for other categories
         };
 
         function App() {
@@ -184,7 +115,6 @@
             const [username, setUsername] = useState('');
             const [isLoggedIn, setIsLoggedIn] = useState(false);
             const [activeTab, setActiveTab] = useState('inventory');
-            const [purchaseOrder, setPurchaseOrder] = useState({});
             const t = translations[language];
 
             const handleLogin = () => {
@@ -193,56 +123,39 @@
                 }
             };
 
-            const handlePurchaseOrderChange = (category, itemId, quantity) => {
-                setPurchaseOrder(prevOrder => ({
-                    ...prevOrder,
-                    [category]: {
-                        ...prevOrder[category],
-                        [itemId]: quantity
-                    }
-                }));
+            const handleWhatsAppShare = () => {
+                const link = "https://chat.whatsapp.com/Fyoa3jnYx1ZERYB90DkVRX";
+                window.open(link, '_blank');
+            };
+
+            const handleSubmitOrder = () => {
+                generatePDF();
+                handleWhatsAppShare();
             };
 
             const generatePDF = () => {
-                const doc = new jspdf.jsPDF();
-                let y = 20;
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
 
-                doc.setFontSize(18);
-                doc.text("Purchase Order", 20, y);
-                y += 10;
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(16);
+                doc.text("Ons Coffee Shop - Purchase Order", 10, 10);
 
-                Object.entries(purchaseOrder).forEach(([category, items]) => {
-                    doc.setFontSize(14);
-                    doc.text(t.categories[category], 20, y);
-                    y += 10;
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(12);
+                doc.text(`Created by: ${username}`, 10, 20);
+                doc.text(`Branch: ${branch}`, 10, 30);
+                doc.text(`Date: ${new Date().toLocaleDateString()}`, 10, 40);
 
-                    Object.entries(items).forEach(([itemId, quantity]) => {
-                        const item = inventoryData[category].find(i => i.id == itemId);
-                        doc.setFontSize(12);
-                        doc.text(`${item.name[language]} - ${item.unit[language]} - ${quantity}`, 30, y);
-                        y += 10;
-                    });
+                doc.text("Order Summary", 10, 50);
+                doc.text("Thank you for your order!", 10, 60);
 
-                    y += 10;
-                });
-
-                const date = new Date().toISOString().split('T')[0];
-                const fileName = `PurchaseOrder_${branch}_${date}.pdf`;
-                doc.save(fileName);
-                return doc.output('blob');
-            };
-
-            const shareOnWhatsApp = () => {
-                const pdfBlob = generatePDF();
-                const url = URL.createObjectURL(pdfBlob);
-                const message = `Check out my purchase order!`;
-                const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}&attachment=${encodeURIComponent(url)}`;
-                window.open(whatsappUrl, '_blank');
+                doc.save("purchase_order.pdf");
             };
 
             if (!isLoggedIn) {
                 return (
-                    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-amber-100 flex items-center justify-center p-4" lang={language}>
+                    <div className="min-h-screen flex items-center justify-center p-4" lang={language}>
                         <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
                             <h1 className="text-3xl font-bold text-center mb-8">{t.welcome}</h1>
                             <div className="space-y-4">
@@ -263,7 +176,7 @@
                                     onChange={(e) => setUsername(e.target.value)}
                                 />
                                 <button
-                                    className="w-full bg-amber-600 text-white p-2 rounded hover:bg-amber-700 disabled:opacity-50"
+                                    className="custom-btn w-full p-2 rounded"
                                     onClick={handleLogin}
                                     disabled={!branch || !username}
                                 >
@@ -276,7 +189,7 @@
             }
 
             return (
-                <div className="min-h-screen bg-gray-100 p-4" lang={language}>
+                <div className="min-h-screen p-4" lang={language}>
                     <header className="bg-white shadow rounded-lg p-4 mb-4 flex justify-between items-center">
                         <h1 className="text-2xl font-bold">Ons Coffee</h1>
                         <select 
@@ -336,42 +249,9 @@
                         {activeTab === 'purchase' && (
                             <div>
                                 <h2 className="text-xl font-bold mb-4">{t.purchaseOrder}</h2>
-                                <div className="space-y-4">
-                                    {Object.entries(inventoryData).map(([category, items]) => (
-                                        <div key={category} className="border rounded-lg p-4">
-                                            <h3 className="text-lg font-bold mb-4">{t.categories[category]}</h3>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                {items.map(item => (
-                                                    <div key={item.id} className="border rounded-lg p-4">
-                                                        <h4 className="font-bold">{item.name[language]}</h4>
-                                                        <p>{item.unit[language]}</p>
-                                                        <input
-                                                            type="number"
-                                                            className="w-full p-2 border rounded"
-                                                            placeholder="Quantity"
-                                                            value={purchaseOrder[category]?.[item.id] || ''}
-                                                            onChange={(e) => handlePurchaseOrderChange(category, item.id, e.target.value)}
-                                                        />
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="mt-4 flex justify-between">
-                                    <button
-                                        className="bg-amber-600 text-white p-2 rounded hover:bg-amber-700"
-                                        onClick={generatePDF}
-                                    >
-                                        {t.submit}
-                                    </button>
-                                    <button
-                                        className="bg-green-600 text-white p-2 rounded hover:bg-green-700"
-                                        onClick={shareOnWhatsApp}
-                                    >
-                                        {t.share}
-                                    </button>
-                                </div>
+                                <button className="custom-btn w-full p-2 rounded" onClick={handleSubmitOrder}>
+                                    {t.submit}
+                                </button>
                             </div>
                         )}
                     </div>

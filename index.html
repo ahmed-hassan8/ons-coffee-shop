@@ -6,6 +6,7 @@
     <title>Purchase Order System</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
     <style>
         :root {
             --primary: #7BA084;
@@ -170,6 +171,9 @@
 
             <button onclick="generateOrder()" class="btn btn-primary">
                 Generate & Share on WhatsApp
+            </button>
+            <button onclick="generatePDF()" class="btn btn-primary">
+                Generate PDF
             </button>
         </div>
 
@@ -373,6 +377,53 @@
             
             const encodedMessage = encodeURIComponent(message);
             window.open(`https://chat.whatsapp.com/Fyoa3jnYx1ZERYB90DkVRX?text=${encodedMessage}`);
+        }
+
+        function generatePDF() {
+            const doc = new jspdf.jsPDF();
+            let y = 20;
+
+            // Set color scheme
+            doc.setFillColor(123, 160, 132); // Primary
+            doc.rect(0, 0, doc.internal.pageSize.width, 20, 'F');
+
+            doc.setFontSize(18);
+            doc.setTextColor(255, 255, 255);
+            doc.text("Purchase Order", doc.internal.pageSize.width / 2, 15, { align: 'center' });
+
+            doc.setFontSize(12);
+            doc.setTextColor(0, 0, 0);
+            doc.text(`Branch: Al-Nafl`, 10, y);
+            y += 10;
+            doc.text(`Date: ${new Date().toLocaleDateString()}`, 10, y);
+            y += 10;
+            doc.text(`User: ${document.getElementById('username').value}`, 10, y);
+            y += 20;
+
+            doc.setFontSize(14);
+            doc.setTextColor(0, 0, 0);
+            doc.text("Item Name", 10, y);
+            doc.text("Unit", 70, y);
+            doc.text("Quantity", 130, y);
+            y += 10;
+
+            doc.setDrawColor(0, 0, 0);
+            doc.line(10, y, 190, y);
+            y += 5;
+
+            for (const category in selectedItems) {
+                const items = selectedItems[category];
+                if (Object.keys(items).length > 0) {
+                    Object.values(items).forEach(item => {
+                        doc.text(item.name, 10, y);
+                        doc.text(item.unit, 70, y);
+                        doc.text(item.quantity.toString(), 130, y);
+                        y += 10;
+                    });
+                }
+            }
+
+            doc.save("purchase_order.pdf");
         }
     </script>
 </body>

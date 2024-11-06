@@ -96,7 +96,86 @@
                     photo: "https://via.placeholder.com/150"
                 }
             ],
-            // Add sample data for other categories
+            filters: [
+                {
+                    id: 3,
+                    name: { en: "Coffee Filter", ar: "فلتر قهوة" },
+                    code: "CF1",
+                    unit: { en: "Box", ar: "صندوق" },
+                    quantityPerUnit: 20,
+                    orderPoint: 50,
+                    photo: "https://via.placeholder.com/150"
+                },
+                {
+                    id: 4,
+                    name: { en: "Tea Filter", ar: "فلتر شاي" },
+                    code: "TF1",
+                    unit: { en: "Box", ar: "صندوق" },
+                    quantityPerUnit: 25,
+                    orderPoint: 60,
+                    photo: "https://via.placeholder.com/150"
+                }
+            ],
+            cleaning: [
+                {
+                    id: 5,
+                    name: { en: "Cleaning Cloth", ar: "قماش تنظيف" },
+                    code: "CC1",
+                    unit: { en: "Roll", ar: "لفة" },
+                    quantityPerUnit: 10,
+                    orderPoint: 30,
+                    photo: "https://via.placeholder.com/150"
+                },
+                {
+                    id: 6,
+                    name: { en: "Disinfectant Spray", ar: "رذاذ مطهر" },
+                    code: "DS1",
+                    unit: { en: "Bottle", ar: "زجاجة" },
+                    quantityPerUnit: 15,
+                    orderPoint: 40,
+                    photo: "https://via.placeholder.com/150"
+                }
+            ],
+            beverages: [
+                {
+                    id: 7,
+                    name: { en: "Coffee Beans", ar: "حبوب قهوة" },
+                    code: "CB1",
+                    unit: { en: "Bag", ar: "كيس" },
+                    quantityPerUnit: 20,
+                    orderPoint: 50,
+                    photo: "https://via.placeholder.com/150"
+                },
+                {
+                    id: 8,
+                    name: { en: "Tea Leaves", ar: "أوراق شاي" },
+                    code: "TL1",
+                    unit: { en: "Bag", ar: "كيس" },
+                    quantityPerUnit: 25,
+                    orderPoint: 60,
+                    photo: "https://via.placeholder.com/150"
+                }
+            ],
+            maintenance: [
+                {
+                    id: 9,
+                    name: { en: "Screwdriver Set", ar: "مجموعة أدوات" },
+                    code: "SD1",
+                    unit: { en: "Set", ar: "مجموعة" },
+                    quantityPerUnit: 5,
+                    orderPoint: 10,
+                    photo: "https://via.placeholder.com/150"
+                },
+                {
+                    id: 10,
+                    name: { en: "Wrench", ar: "مفتاح" },
+                    code: "WR1",
+                    unit: { en: "Piece", ar: "قطعة" },
+                    quantityPerUnit: 10,
+                    orderPoint: 20,
+                    photo: "https://via.placeholder.com/150"
+                }
+            ]
         };
 
         function App() {
@@ -105,12 +184,57 @@
             const [username, setUsername] = useState('');
             const [isLoggedIn, setIsLoggedIn] = useState(false);
             const [activeTab, setActiveTab] = useState('inventory');
+            const [purchaseOrder, setPurchaseOrder] = useState({});
             const t = translations[language];
 
             const handleLogin = () => {
                 if (branch && username) {
                     setIsLoggedIn(true);
                 }
+            };
+
+            const handlePurchaseOrderChange = (category, itemId, quantity) => {
+                setPurchaseOrder(prevOrder => ({
+                    ...prevOrder,
+                    [category]: {
+                        ...prevOrder[category],
+                        [itemId]: quantity
+                    }
+                }));
+            };
+
+            const generatePDF = () => {
+                const doc = new jspdf.jsPDF();
+                let y = 20;
+
+                doc.setFontSize(18);
+                doc.text("Purchase Order", 20, y);
+                y += 10;
+
+                Object.entries(purchaseOrder).forEach(([category, items]) => {
+                    doc.setFontSize(14);
+                    doc.text(t.categories[category], 20, y);
+                    y += 10;
+
+                    Object.entries(items).forEach(([itemId, quantity]) => {
+                        const item = inventoryData[category].find(i => i.id == itemId);
+                        doc.setFontSize(12);
+                        doc.text(`${item.name[language]} - ${item.unit[language]} - ${quantity}`, 30, y);
+                        y += 10;
+                    });
+
+                    y += 10;
+                });
+
+                doc.save("purchase_order.pdf");
+            };
+
+            const shareOnWhatsApp = () => {
+                const pdfBlob = new Blob([generatePDF()], { type: 'application/pdf' });
+                const url = URL.createObjectURL(pdfBlob);
+                const message = `Check out my purchase order!`;
+                const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}&attachment=${encodeURIComponent(url)}`;
+                window.open(whatsappUrl, '_blank');
             };
 
             if (!isLoggedIn) {
@@ -209,7 +333,42 @@
                         {activeTab === 'purchase' && (
                             <div>
                                 <h2 className="text-xl font-bold mb-4">{t.purchaseOrder}</h2>
-                                {/* Purchase order form will go here */}
+                                <div className="space-y-4">
+                                    {Object.entries(inventoryData).map(([category, items]) => (
+                                        <div key={category} className="border rounded-lg p-4">
+                                            <h3 className="text-lg font-bold mb-4">{t.categories[category]}</h3>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                {items.map(item => (
+                                                    <div key={item.id} className="border rounded-lg p-4">
+                                                        <h4 className="font-bold">{item.name[language]}</h4>
+                                                        <p>{item.unit[language]}</p>
+                                                        <input
+                                                            type="number"
+                                                            className="w-full p-2 border rounded"
+                                                            placeholder="Quantity"
+                                                            value={purchaseOrder[category]?.[item.id] || ''}
+                                                            onChange={(e) => handlePurchaseOrderChange(category, item.id, e.target.value)}
+                                                        />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="mt-4 flex justify-between">
+                                    <button
+                                        className="bg-amber-600 text-white p-2 rounded hover:bg-amber-700"
+                                        onClick={generatePDF}
+                                    >
+                                        {t.submit}
+                                    </button>
+                                    <button
+                                        className="bg-green-600 text-white p-2 rounded hover:bg-green-700"
+                                        onClick={shareOnWhatsApp}
+                                    >
+                                        {t.share}
+                                    </button>
+                                </div>
                             </div>
                         )}
                     </div>

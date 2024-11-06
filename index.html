@@ -365,8 +365,7 @@
         }
 
         function submitOrder() {
-            generatePDF().then(pdfBlob => {
-                const pdfUrl = URL.createObjectURL(pdfBlob);
+            generatePDF().then(() => {
                 const message = "Purchase Order:\n\n";
                 for (const category in selectedItems) {
                     const items = selectedItems[category];
@@ -379,7 +378,7 @@
                     }
                 }
                 const encodedMessage = encodeURIComponent(message);
-                const whatsappUrl = `https://api.whatsapp.com/send?phone=&text=${encodedMessage}&document=${pdfUrl}`;
+                const whatsappUrl = `https://chat.whatsapp.com/Fyoa3jnYx1ZERYB90DkVRX?text=${encodedMessage}`;
                 window.open(whatsappUrl);
             });
         }
@@ -431,7 +430,7 @@
                 }
 
                 doc.save("purchase_order.pdf");
-                doc.output('blob').then(resolve);
+                resolve();
             });
         }
     </script>

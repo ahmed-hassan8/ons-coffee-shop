@@ -3,229 +3,219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ons Coffee - Inventory and Purchase Order</title>
+    <title>Enhanced Purchase Order System</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        /* General Styles */
-        body {
+        :root {
+            --primary-green: #7BA084;
+            --secondary-green: #466564;
+            --accent-orange: #E06841;
+            --neutral-gray: #D2D2D0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
             font-family: Arial, sans-serif;
-            background-color: #f7f7f7;
         }
-        .container {
-            max-width: 900px;
-            margin: 20px auto;
+
+        body {
+            background-color: var(--neutral-gray);
             padding: 20px;
-            background-color: #fff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+
+        header {
+            background-color: var(--primary-green);
+            color: white;
+            padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
         }
-        .hidden { display: none; }
-        .tabs {
+
+        .section {
+            margin-bottom: 30px;
+            border: 1px solid var(--neutral-gray);
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .section h2 {
+            color: var(--secondary-green);
+            margin-bottom: 15px;
+        }
+
+        .item-list {
+            list-style: none;
+        }
+
+        .item {
             display: flex;
-            border-bottom: 2px solid #ccc;
-            margin-bottom: 20px;
-        }
-        .tabs button {
-            flex: 1;
+            align-items: center;
             padding: 10px;
-            border: none;
-            background-color: #fff;
-            font-weight: bold;
-            cursor: pointer;
-            color: #466564;
+            background-color: #f9f9f9;
+            margin-bottom: 10px;
+            border-radius: 5px;
         }
-        .tabs button.active {
-            border-bottom: 2px solid #466564;
-            color: #000;
-        }
-        .custom-btn {
-            background-color: #466564;
-            color: #fff;
-            border: none;
-            cursor: pointer;
-            padding: 10px;
-            margin-top: 10px;
-            width: 100%;
-            font-weight: bold;
+
+        .item input {
+            margin-right: 10px;
+            padding: 5px;
+            border: 1px solid var(--neutral-gray);
             border-radius: 4px;
         }
-        .custom-btn:hover {
-            background-color: #7BA084;
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
         }
-        .dropdown-group {
+
+        .btn-add {
+            background-color: var(--primary-green);
+            color: white;
             margin: 10px 0;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            background-color: #fafafa;
         }
-        .dropdown-group label {
-            font-weight: bold;
+
+        .btn-remove {
+            background-color: var(--accent-orange);
+            color: white;
+            margin-left: 10px;
         }
-        .category-details, .item-details { display: none; margin-left: 20px; }
-        .category-details.active, .item-details.active { display: block; }
+
+        .btn-submit {
+            background-color: var(--secondary-green);
+            color: white;
+            font-size: 16px;
+            padding: 15px 30px;
+            display: block;
+            margin: 30px auto;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Login Page -->
-        <div id="login-page">
-            <h2>Login</h2>
-            <label for="branch">Select Branch:</label>
-            <select id="branch">
-                <option value="Al-Nafl">Al-Nafl</option>
-                <option value="Aqiq">Aqiq</option>
-            </select>
-            <br>
-            <label for="user-name">User Name:</label>
-            <input type="text" id="user-name" placeholder="Enter your name">
-            <button class="custom-btn" onclick="handleLogin()">Login</button>
-        </div>
+        <header>
+            <h1>Purchase Order System</h1>
+        </header>
 
-        <!-- Main Content after Login -->
-        <div id="main-page" class="hidden">
-            <div class="tabs">
-                <button onclick="setActiveTab('inventory')" id="inventory-tab" class="active">Inventory</button>
-                <button onclick="setActiveTab('purchase')" id="purchase-tab">Purchase Order</button>
+        <div id="purchaseOrder">
+            <div class="section">
+                <h2>Branch Information</h2>
+                <input type="text" id="branchName" placeholder="Branch Name" style="width: 100%; padding: 10px; margin-bottom: 10px;">
             </div>
-            <div id="content"></div>
+
+            <div class="section">
+                <h2>Equipment</h2>
+                <ul id="equipmentList" class="item-list">
+                    <li class="item">
+                        <input type="text" placeholder="Equipment Name">
+                        <input type="number" placeholder="Quantity">
+                        <button class="btn btn-remove" onclick="removeItem(this)">Remove</button>
+                    </li>
+                </ul>
+                <button class="btn btn-add" onclick="addItem('equipmentList')">Add Equipment</button>
+            </div>
+
+            <div class="section">
+                <h2>Consumables</h2>
+                <ul id="consumablesList" class="item-list">
+                    <li class="item">
+                        <input type="text" placeholder="Consumable Name">
+                        <input type="number" placeholder="Quantity">
+                        <button class="btn btn-remove" onclick="removeItem(this)">Remove</button>
+                    </li>
+                </ul>
+                <button class="btn btn-add" onclick="addItem('consumablesList')">Add Consumable</button>
+            </div>
+
+            <div class="section">
+                <h2>Office Supplies</h2>
+                <ul id="suppliesList" class="item-list">
+                    <li class="item">
+                        <input type="text" placeholder="Supply Name">
+                        <input type="number" placeholder="Quantity">
+                        <button class="btn btn-remove" onclick="removeItem(this)">Remove</button>
+                    </li>
+                </ul>
+                <button class="btn btn-add" onclick="addItem('suppliesList')">Add Supply</button>
+            </div>
+
+            <button class="btn btn-submit" onclick="generateAndSharePDF()">Generate & Share on WhatsApp</button>
         </div>
     </div>
 
-    <!-- jsPDF and autoTable library for PDF generation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.21/jspdf.plugin.autotable.min.js"></script>
     <script>
-        const { jsPDF } = window.jspdf;
-
-        let activeTab = 'inventory';
-        let selectedBranch = '';
-        let userName = '';
-
-        const inventoryData = [
-            { category: "Cups and Lids", items: [
-                { name: "9 oz Cup", unit: "carton", quantity: 500, orderPoint: 250 }
-            ] },
-            { category: "Filters", items: [
-                { name: "Coffee Filters", unit: "box", quantity: 100, orderPoint: 50 }
-            ] },
-            { category: "Cleaning Materials", items: [
-                { name: "Cleaning Cloths", unit: "piece", quantity: 200, orderPoint: 100 }
-            ] },
-            { category: "Beverages", items: [
-                { name: "Tea Bags", unit: "box", quantity: 150, orderPoint: 75 }
-            ] }
-        ];
-
-        const purchaseOrderItems = [
-            { category: "Cups and Lids", items: ["9 oz Cup", "12 oz Cup"] },
-            { category: "Filters", items: ["Coffee Filters", "Tea Filters"] },
-            { category: "Cleaning Materials", items: ["Cleaning Cloths", "Disinfectant Spray"] },
-            { category: "Beverages", items: ["Coffee Syrups", "Tea Bags"] }
-        ];
-
-        function handleLogin() {
-            selectedBranch = document.getElementById("branch").value;
-            userName = document.getElementById("user-name").value;
-            if (!userName) {
-                alert("Please enter your name.");
-                return;
-            }
-            document.getElementById("login-page").classList.add("hidden");
-            document.getElementById("main-page").classList.remove("hidden");
-            renderContent();
-        }
-
-        function setActiveTab(tab) {
-            activeTab = tab;
-            document.getElementById("inventory-tab").classList.toggle("active", tab === "inventory");
-            document.getElementById("purchase-tab").classList.toggle("active", tab === "purchase");
-            renderContent();
-        }
-
-        function renderContent() {
-            const container = document.getElementById('content');
-            container.innerHTML = activeTab === 'inventory' ? renderInventory() : renderPurchaseOrder();
-        }
-
-        function renderInventory() {
-            return `
-                <h2>Inventory</h2>
-                ${inventoryData.map(category => `
-                    <div onclick="toggleCategory('${category.category}')" style="cursor:pointer;">
-                        <strong>${category.category}</strong>
-                    </div>
-                    <div class="category-details ${category.category}">
-                        ${category.items.map(item => `
-                            <div class="item-details">
-                                <strong>Item Name:</strong> ${item.name}<br>
-                                <strong>Unit:</strong> ${item.unit}<br>
-                                <strong>Quantity:</strong> ${item.quantity}<br>
-                                <strong>Order Point:</strong> ${item.orderPoint}
-                            </div>
-                        `).join('')}
-                    </div>
-                `).join('')}
+        function addItem(listId) {
+            const list = document.getElementById(listId);
+            const newItem = document.createElement('li');
+            newItem.className = 'item';
+            newItem.innerHTML = `
+                <input type="text" placeholder="Item Name">
+                <input type="number" placeholder="Quantity">
+                <button class="btn btn-remove" onclick="removeItem(this)">Remove</button>
             `;
+            list.appendChild(newItem);
         }
 
-        function toggleCategory(category) {
-            document.querySelector(`.${category}`).classList.toggle("active");
-        }
-
-        function renderPurchaseOrder() {
-            return `
-                <h2>Purchase Order</h2>
-                ${purchaseOrderItems.map(category => `
-                    <div class="dropdown-group">
-                        <label>${category.category}:</label>
-                        <select>
-                            <option value="" disabled selected>Select Item</option>
-                            ${category.items.map(item => `
-                                <option value="${item}">${item}</option>
-                            `).join('')}
-                        </select>
-                        <input type="number" placeholder="Quantity" min="1">
-                    </div>
-                `).join('')}
-                <button class="custom-btn" onclick="handleSubmitOrder()">Submit Order</button>
-            `;
-        }
-
-        function handleSubmitOrder() {
-            if (!userName) {
-                alert("Please enter your name.");
-                return;
+        function removeItem(button) {
+            const item = button.parentElement;
+            const list = item.parentElement;
+            if (list.children.length > 1) {
+                list.removeChild(item);
             }
-            generatePDF();
-            window.open("https://chat.whatsapp.com/Fyoa3jnYx1ZERYB90DkVRX", "_blank");
         }
 
-        function generatePDF() {
-            const doc = new jsPDF();
-            const date = new Date().toLocaleDateString();
+        function generateAndSharePDF() {
+            const { jsPDF } = window.jspdf;
+            const branchName = document.getElementById('branchName').value || 'Branch';
+            const date = new Date().toISOString().split('T')[0];
+            const fileName = `${branchName}_PO_${date}.pdf`;
 
-            doc.setFontSize(18);
-            doc.text("Ons Coffee Purchase Order", 10, 10);
-            doc.setFontSize(12);
-            doc.text(`Generated by: ${userName}`, 10, 20);
-            doc.text(`Branch: ${selectedBranch}`, 10, 30);
-            doc.text(`Date: ${date}`, 10, 40);
-
-            doc.autoTable({
-                head: [['Category', 'Items']],
-                body: purchaseOrderItems.map(item => [item.category, item.items.join(", ")]),
-                theme: 'grid',
-                styles: { fillColor: [123, 160, 132] },
-                headStyles: { fillColor: [70, 101, 100], textColor: 255, fontSize: 12 },
-                margin: { top: 50 }
+            html2canvas(document.getElementById('purchaseOrder')).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const imgProps = pdf.getImageProperties(imgData);
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+                
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                
+                // Convert PDF to blob
+                const pdfBlob = pdf.output('blob');
+                const pdfUrl = URL.createObjectURL(pdfBlob);
+                
+                // Create WhatsApp share link
+                const whatsappGroup = 'https://chat.whatsapp.com/Fyoa3jnYx1ZERYB90DkVRX';
+                const shareText = encodeURIComponent(`Purchase Order from ${branchName}`);
+                
+                // Open WhatsApp in new window
+                window.open(`https://api.whatsapp.com/send?text=${shareText}&chat=${whatsappGroup}`);
+                
+                // Also trigger PDF download
+                const link = document.createElement('a');
+                link.href = pdfUrl;
+                link.download = fileName;
+                link.click();
             });
-
-            doc.save(`purchase_order_${date}.pdf`);
         }
-
-        document.addEventListener("DOMContentLoaded", function() {
-            renderContent();
-        });
     </script>
 </body>
 </html>

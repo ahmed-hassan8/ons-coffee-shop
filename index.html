@@ -226,11 +226,14 @@
                     y += 10;
                 });
 
-                doc.save("purchase_order.pdf");
+                const date = new Date().toISOString().split('T')[0];
+                const fileName = `PurchaseOrder_${branch}_${date}.pdf`;
+                doc.save(fileName);
+                return doc.output('blob');
             };
 
             const shareOnWhatsApp = () => {
-                const pdfBlob = new Blob([generatePDF()], { type: 'application/pdf' });
+                const pdfBlob = generatePDF();
                 const url = URL.createObjectURL(pdfBlob);
                 const message = `Check out my purchase order!`;
                 const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}&attachment=${encodeURIComponent(url)}`;

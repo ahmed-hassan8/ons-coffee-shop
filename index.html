@@ -365,74 +365,74 @@
         }
 
         function submitOrder() {
-            generatePDF();
-            generateOrder();
-        }
-
-        function generateOrder() {
-            let message = "Purchase Order:\n\n";
-            
-            for (const category in selectedItems) {
-                const items = selectedItems[category];
-                if (Object.keys(items).length > 0) {
-                    message += `${category.replace(/([A-Z])/g, ' $1').trim()}:\n`;
-                    Object.values(items).forEach(item => {
-                        message += `- ${item.name}: ${item.quantity} ${item.unit}\n`;
-                    });
-                    message += '\n';
+            generatePDF().then(pdfBlob => {
+                const pdfUrl = URL.createObjectURL(pdfBlob);
+                const message = "Purchase Order:\n\n";
+                for (const category in selectedItems) {
+                    const items = selectedItems[category];
+                    if (Object.keys(items).length > 0) {
+                        message += `${category.replace(/([A-Z])/g, ' $1').trim()}:\n`;
+                        Object.values(items).forEach(item => {
+                            message += `- ${item.name}: ${item.quantity} ${item.unit}\n`;
+                        });
+                        message += '\n';
+                    }
                 }
-            }
-            
-            const encodedMessage = encodeURIComponent(message);
-            window.open(`https://chat.whatsapp.com/Fyoa3jnYx1ZERYB90DkVRX?text=${encodedMessage}`);
+                const encodedMessage = encodeURIComponent(message);
+                const whatsappUrl = `https://api.whatsapp.com/send?phone=&text=${encodedMessage}&document=${pdfUrl}`;
+                window.open(whatsappUrl);
+            });
         }
 
         function generatePDF() {
-            const doc = new jspdf.jsPDF();
-            let y = 20;
+            return new Promise((resolve, reject) => {
+                const doc = new jspdf.jsPDF();
+                let y = 20;
 
-            // Set color scheme
-            doc.setFillColor(123, 160, 132); // Primary
-            doc.rect(0, 0, doc.internal.pageSize.width, 20, 'F');
+                // Set color scheme
+                doc.setFillColor(123, 160, 132); // Primary
+                doc.rect(0, 0, doc.internal.pageSize.width, 20, 'F');
 
-            doc.setFontSize(18);
-            doc.setTextColor(255, 255, 255);
-            doc.text("Purchase Order", doc.internal.pageSize.width / 2, 15, { align: 'center' });
+                doc.setFontSize(18);
+                doc.setTextColor(255, 255, 255);
+                doc.text("Purchase Order", doc.internal.pageSize.width / 2, 15, { align: 'center' });
 
-            doc.setFontSize(12);
-            doc.setTextColor(0, 0, 0);
-            const branch = document.getElementById('branch').value;
-            doc.text(`Branch: ${branch}`, 10, y);
-            y += 10;
-            doc.text(`Date: ${new Date().toLocaleDateString()}`, 10, y);
-            y += 10;
-            doc.text(`User: ${document.getElementById('username').value}`, 10, y);
-            y += 20;
+                doc.setFontSize(12);
+                doc.setTextColor(0, 0, 0);
+                const branch = document.getElementById('branch').value;
+                doc.text(`Branch: ${branch}`, 10, y);
+                y += 10;
+                doc.text(`Date: ${new Date().toLocaleDateString()}`, 10, y);
+                y += 10;
+                doc.text(`User: ${document.getElementById('username').value}`, 10, y);
+                y += 20;
 
-            doc.setFontSize(14);
-            doc.setTextColor(0, 0, 0);
-            doc.text("Item Name", 10, y);
-            doc.text("Unit", 70, y);
-            doc.text("Quantity", 130, y);
-            y += 10;
+                doc.setFontSize(14);
+                doc.setTextColor(0, 0, 0);
+                doc.text("Item Name", 10, y);
+                doc.text("Unit", 70, y);
+                doc.text("Quantity", 130, y);
+                y += 10;
 
-            doc.setDrawColor(0, 0, 0);
-            doc.line(10, y, 190, y);
-            y += 5;
+                doc.setDrawColor(0, 0, 0);
+                doc.line(10, y, 190, y);
+                y += 5;
 
-            for (const category in selectedItems) {
-                const items = selectedItems[category];
-                if (Object.keys(items).length > 0) {
-                    Object.values(items).forEach(item => {
-                        doc.text(item.name, 10, y);
-                        doc.text(item.unit, 70, y);
-                        doc.text(item.quantity.toString(), 130, y);
-                        y += 10;
-                    });
+                for (const category in selectedItems) {
+                    const items = selectedItems[category];
+                    if (Object.keys(items).length > 0) {
+                        Object.values(items).forEach(item => {
+                            doc.text(item.name, 10, y);
+                            doc.text(item.unit, 70, y);
+                            doc.text(item.quantity.toString(), 130, y);
+                            y += 10;
+                        });
+                    }
                 }
-            }
 
-            doc.save("purchase_order.pdf");
+                doc.save("purchase_order.pdf");
+                doc.output('blob').then(resolve);
+            });
         }
     </script>
 </body>

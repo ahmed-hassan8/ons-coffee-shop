@@ -104,14 +104,11 @@
         let userName = '';
 
         let purchaseOrderItems = [
-            { name: "Coffee Beans", quantity: 10, unit: "kg", pricePerUnit: 20, orderPoint: 5 },
-            { name: "Milk", quantity: 50, unit: "ltr", pricePerUnit: 10, orderPoint: 20 },
-            { name: "Sugar", quantity: 30, unit: "kg", pricePerUnit: 5, orderPoint: 10 },
-            { name: "Cups and Lids", quantity: 100, unit: "pcs", pricePerUnit: 1, orderPoint: 50 },
-            { name: "Filters", quantity: 50, unit: "pcs", pricePerUnit: 2, orderPoint: 25 },
-            { name: "Cleaning Materials", quantity: 20, unit: "kg", pricePerUnit: 3, orderPoint: 10 },
-            { name: "Beverages", quantity: 40, unit: "ltr", pricePerUnit: 8, orderPoint: 20 },
-            { name: "Maintenance Materials", quantity: 15, unit: "pcs", pricePerUnit: 5, orderPoint: 5 }
+            { category: "Cups and Lids", items: ["Plastic Cups", "Paper Lids"] },
+            { category: "Filters", items: ["Coffee Filters", "Tea Filters"] },
+            { category: "Cleaning Materials", items: ["Cleaning Cloths", "Disinfectant Spray"] },
+            { category: "Beverages", items: ["Coffee Syrups", "Tea Bags"] },
+            { category: "Maintenance Materials", items: ["Spare Parts", "Cleaning Brushes"] }
         ];
 
         function updateBranch() {
@@ -156,16 +153,13 @@
             doc.text(`Date: ${date}`, 10, 40);
 
             // Table Content
-            const tableData = purchaseOrderItems.map((item) => [
-                item.name,
-                item.quantity,
-                item.unit,
-                item.pricePerUnit,
-                item.orderPoint,
+            const tableData = purchaseOrderItems.map((category) => [
+                category.category,
+                category.items.join(", ")
             ]);
 
             doc.autoTable({
-                head: [['Item', 'Quantity', 'Unit', 'Price per Unit', 'Order Point']],
+                head: [['Category', 'Items']],
                 body: tableData,
                 theme: 'grid',
                 styles: {
@@ -182,11 +176,8 @@
             // Arabic Text
             doc.setFontSize(14);
             doc.text("طلب شراء", 180, 10, { align: "right" });
-            doc.text("العنصر", 10, 60, { align: "right" });
-            doc.text("الكمية", 50, 60, { align: "right" });
-            doc.text("الوحدة", 80, 60, { align: "right" });
-            doc.text("سعر الوحدة", 110, 60, { align: "right" });
-            doc.text("نقطة الطلب", 150, 60, { align: "right" });
+            doc.text("الفئة", 10, 60, { align: "right" });
+            doc.text("العناصر", 50, 60, { align: "right" });
 
             // Save PDF
             doc.save(`purchase_order_${date}.pdf`);
@@ -204,19 +195,13 @@
                 <h2 class="text-xl font-bold mb-4">${t.inventory}</h2>
                 <table class="item-list">
                     <tr>
-                        <th>Item</th>
-                        <th>Quantity</th>
-                        <th>Unit</th>
-                        <th>Price per Unit</th>
-                        <th>Order Point</th>
+                        <th>Category</th>
+                        <th>Items</th>
                     </tr>
-                    ${purchaseOrderItems.map(item => `
+                    ${purchaseOrderItems.map(category => `
                         <tr>
-                            <td>${item.name}</td>
-                            <td>${item.quantity}</td>
-                            <td>${item.unit}</td>
-                            <td>${item.pricePerUnit}</td>
-                            <td>${item.orderPoint}</td>
+                            <td>${category.category}</td>
+                            <td>${category.items.join(", ")}</td>
                         </tr>
                     `).join('')}
                 </table>
@@ -227,15 +212,20 @@
             return `
                 <h2 class="text-xl font-bold mb-4">${t.purchaseOrder}</h2>
                 <div>
-                    ${purchaseOrderItems.map(item => `
+                    ${purchaseOrderItems.map(category => `
                         <div>
-                            <p><strong>Name:</strong> ${item.name}</p>
-                            <p><strong>Quantity:</strong> 
+                            <p><strong>${category.category}:</strong></p>
+                            <p>
+                                <select>
+                                    ${category.items.map(item => `
+                                        <option value="${item}">${item}</option>
+                                    `).join('')}
+                                </select>
                                 <select>
                                     ${Array.from({ length: 100 }, (_, i) => i + 1).map(num => `
                                         <option value="${num}">${num}</option>
                                     `).join('')}
-                                </select> ${item.unit}
+                                </select>
                             </p>
                         </div>
                     `).join('')}

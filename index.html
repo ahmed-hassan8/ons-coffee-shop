@@ -1,146 +1,322 @@
-import React, { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase Order System</title>
+    <style>
+        :root {
+            --color-sage: #7BA084;
+            --color-teal: #466564;
+            --color-orange: #E06841;
+            --color-gray: #D2D2D0;
+        }
 
-const PurchaseOrderSystem = () => {
-  const [currentPage, setCurrentPage] = useState('login');
-  const [userName, setUserName] = useState('');
-  const [selectedBranch, setSelectedBranch] = useState('');
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
 
-  const inventory = {
-    'Cups & Lids': [
-      { name: '9OZ', unit: 'Carton', quantityPerUnit: '500 Cups', orderPoint: 'Half Carton' },
-      { name: '12OZ', unit: 'Carton', quantityPerUnit: '500 Cups', orderPoint: 'Half Carton' },
-      { name: 'Lids 9OZ', unit: 'Carton', quantityPerUnit: '1000 Lids', orderPoint: 'Half Carton' }
-    ],
-    'Filters': [
-      { name: 'V60 Filters', unit: 'Box', quantityPerUnit: '100 Filters', orderPoint: '2 Boxes' },
-      { name: 'Chemex Filters', unit: 'Box', quantityPerUnit: '100 Filters', orderPoint: '2 Boxes' }
-    ],
-    'Cleaning Materials': [
-      { name: 'Sanitizer', unit: 'Bottle', quantityPerUnit: '1L', orderPoint: '2 Bottles' },
-      { name: 'Detergent', unit: 'Container', quantityPerUnit: '5L', orderPoint: '1 Container' }
-    ]
-  };
+        body {
+            background-color: var(--color-gray);
+            min-height: 100vh;
+        }
 
-  const handleLogin = () => {
-    if (userName && selectedBranch) {
-      setCurrentPage('main');
-    }
-  };
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
 
-  if (currentPage === 'login') {
-    return (
-      <Card className="w-full max-w-md mx-auto mt-8">
-        <CardHeader>
-          <CardTitle>Login</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <label>Branch</label>
-            <Select value={selectedBranch} onValueChange={setSelectedBranch}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select Branch" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="al-nafl">Al-Nafl</SelectItem>
-                <SelectItem value="aqiq">Aqiq</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="space-y-2">
-            <label>User Name</label>
-            <Input 
-              type="text" 
-              value={userName}
-              onChange={(e) => setUserName(e.target.value)}
-              placeholder="Enter your name"
-            />
-          </div>
-          
-          <Button onClick={handleLogin} className="w-full">
-            Login
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
 
-  return (
-    <div className="container mx-auto p-4">
-      <Tabs defaultValue="purchase">
-        <TabsList className="mb-4">
-          <TabsTrigger value="purchase">Purchase Order</TabsTrigger>
-          <TabsTrigger value="inventory">Inventory</TabsTrigger>
-        </TabsList>
+        .login-container {
+            max-width: 400px;
+            margin: 40px auto;
+        }
 
-        <TabsContent value="purchase">
-          <Card>
-            <CardHeader>
-              <CardTitle>Purchase Order Form</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <section>
-                  <h3 className="text-lg font-semibold">Branch Information</h3>
-                  <p>Branch: {selectedBranch}</p>
-                  <p>User: {userName}</p>
-                </section>
+        .form-group {
+            margin-bottom: 20px;
+        }
 
-                {['Equipment', 'Consumables', 'Office Supplies'].map((section) => (
-                  <section key={section} className="border p-4 rounded">
-                    <h3 className="text-lg font-semibold">{section}</h3>
-                    <Button variant="outline" size="sm" className="mt-2">
-                      Add {section.slice(0, -1)}
-                    </Button>
-                  </section>
-                ))}
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--color-teal);
+            font-weight: bold;
+        }
 
-                <Button 
-                  onClick={() => {
-                    // Here you would generate PDF and share to WhatsApp
-                    window.open('https://chat.whatsapp.com/Fyoa3jnYx1ZERYB90DkVRX', '_blank');
-                  }}
-                  className="w-full"
-                >
-                  Generate & Share on WhatsApp
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+        select, input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid var(--color-sage);
+            border-radius: 4px;
+            font-size: 16px;
+        }
 
-        <TabsContent value="inventory">
-          <Card>
-            <CardHeader>
-              <CardTitle>Inventory</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {Object.entries(inventory).map(([category, items]) => (
-                <div key={category} className="mb-6">
-                  <h3 className="text-lg font-semibold mb-2">{category}</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {items.map((item) => (
-                      <Card key={item.name} className="p-4">
-                        <h4 className="font-medium">{item.name}</h4>
-                        <p>Unit: {item.unit}</p>
-                        <p>Quantity per Unit: {item.quantityPerUnit}</p>
-                        <p>Order Point: {item.orderPoint}</p>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+        .btn {
+            background-color: var(--color-sage);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: var(--color-teal);
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            background: var(--color-gray);
+            border: none;
+            flex: 1;
+            font-size: 16px;
+        }
+
+        .tab.active {
+            background: var(--color-sage);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .inventory-category {
+            margin-bottom: 30px;
+        }
+
+        .category-title {
+            color: var(--color-teal);
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid var(--color-orange);
+        }
+
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .item-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--color-orange);
+        }
+
+        .item-card h4 {
+            color: var(--color-teal);
+            margin-bottom: 10px;
+        }
+
+        .section-title {
+            color: var(--color-teal);
+            margin-bottom: 20px;
+        }
+
+        .order-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .add-item-btn {
+            background: var(--color-orange);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .share-btn {
+            background: var(--color-orange);
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="loginPage" class="container">
+        <div class="login-container card">
+            <h2 class="section-title">Login</h2>
+            <div class="form-group">
+                <label for="branch">Branch</label>
+                <select id="branch" required>
+                    <option value="">Select Branch</option>
+                    <option value="al-nafl">Al-Nafl</option>
+                    <option value="aqiq">Aqiq</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" required placeholder="Enter your username">
+            </div>
+            <button class="btn" onclick="handleLogin()">Login</button>
+        </div>
     </div>
-  );
-};
 
-export default PurchaseOrderSystem;
+    <div id="mainPage" class="container" style="display: none;">
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('purchase')">Purchase Order</button>
+            <button class="tab" onclick="showTab('inventory')">Inventory</button>
+        </div>
+
+        <div id="purchaseTab" class="tab-content active">
+            <div class="order-section">
+                <h2 class="section-title">Branch Information</h2>
+                <p id="branchInfo"></p>
+                <p id="userInfo"></p>
+            </div>
+
+            <div class="order-section">
+                <h2 class="section-title">Equipment</h2>
+                <button class="add-item-btn">Add Equipment</button>
+            </div>
+
+            <div class="order-section">
+                <h2 class="section-title">Consumables</h2>
+                <button class="add-item-btn">Add Consumable</button>
+            </div>
+
+            <div class="order-section">
+                <h2 class="section-title">Office Supplies</h2>
+                <button class="add-item-btn">Add Supply</button>
+            </div>
+
+            <button class="btn share-btn" onclick="shareOnWhatsApp()">Generate & Share on WhatsApp</button>
+        </div>
+
+        <div id="inventoryTab" class="tab-content">
+            <div class="inventory-category">
+                <h3 class="category-title">Cups & Lids</h3>
+                <div class="items-grid">
+                    <div class="item-card">
+                        <h4>9OZ</h4>
+                        <p>Unit: Carton</p>
+                        <p>Quantity per Unit: 500 Cups</p>
+                        <p>Order Point: Half Carton</p>
+                    </div>
+                    <div class="item-card">
+                        <h4>12OZ</h4>
+                        <p>Unit: Carton</p>
+                        <p>Quantity per Unit: 500 Cups</p>
+                        <p>Order Point: Half Carton</p>
+                    </div>
+                    <div class="item-card">
+                        <h4>Lids 9OZ</h4>
+                        <p>Unit: Carton</p>
+                        <p>Quantity per Unit: 1000 Lids</p>
+                        <p>Order Point: Half Carton</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="inventory-category">
+                <h3 class="category-title">Filters</h3>
+                <div class="items-grid">
+                    <div class="item-card">
+                        <h4>V60 Filters</h4>
+                        <p>Unit: Box</p>
+                        <p>Quantity per Unit: 100 Filters</p>
+                        <p>Order Point: 2 Boxes</p>
+                    </div>
+                    <div class="item-card">
+                        <h4>Chemex Filters</h4>
+                        <p>Unit: Box</p>
+                        <p>Quantity per Unit: 100 Filters</p>
+                        <p>Order Point: 2 Boxes</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="inventory-category">
+                <h3 class="category-title">Cleaning Materials</h3>
+                <div class="items-grid">
+                    <div class="item-card">
+                        <h4>Sanitizer</h4>
+                        <p>Unit: Bottle</p>
+                        <p>Quantity per Unit: 1L</p>
+                        <p>Order Point: 2 Bottles</p>
+                    </div>
+                    <div class="item-card">
+                        <h4>Detergent</h4>
+                        <p>Unit: Container</p>
+                        <p>Quantity per Unit: 5L</p>
+                        <p>Order Point: 1 Container</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function handleLogin() {
+            const branch = document.getElementById('branch').value;
+            const username = document.getElementById('username').value;
+
+            if (branch && username) {
+                document.getElementById('loginPage').style.display = 'none';
+                document.getElementById('mainPage').style.display = 'block';
+                document.getElementById('branchInfo').textContent = `Branch: ${branch}`;
+                document.getElementById('userInfo').textContent = `User: ${username}`;
+            } else {
+                alert('Please fill in all fields');
+            }
+        }
+
+        function showTab(tabName) {
+            const tabs = document.getElementsByClassName('tab');
+            const contents = document.getElementsByClassName('tab-content');
+
+            for (let tab of tabs) {
+                tab.classList.remove('active');
+            }
+            for (let content of contents) {
+                content.classList.remove('active');
+            }
+
+            if (tabName === 'purchase') {
+                tabs[0].classList.add('active');
+                document.getElementById('purchaseTab').classList.add('active');
+            } else {
+                tabs[1].classList.add('active');
+                document.getElementById('inventoryTab').classList.add('active');
+            }
+        }
+
+        function shareOnWhatsApp() {
+            window.open('https://chat.whatsapp.com/Fyoa3jnYx1ZERYB90DkVRX', '_blank');
+        }
+    </script>
+</body>
+</html>

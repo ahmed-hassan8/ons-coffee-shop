@@ -169,11 +169,8 @@
                 </button>
             </div>
 
-            <button onclick="generateOrder()" class="btn btn-primary">
-                Generate & Share on WhatsApp
-            </button>
-            <button onclick="generatePDF()" class="btn btn-primary">
-                Generate PDF
+            <button onclick="submitOrder()" class="btn btn-primary">
+                Submit The Order
             </button>
         </div>
 
@@ -272,6 +269,12 @@
         function login() {
             document.getElementById('loginPage').style.display = 'none';
             document.getElementById('mainPage').style.display = 'block';
+            updateBranchInformation();
+        }
+
+        function updateBranchInformation() {
+            const branch = document.getElementById('branch').value;
+            document.getElementById('branch-information').innerText = `Branch: ${branch}`;
         }
 
         function switchTab(tabId) {
@@ -361,6 +364,11 @@
             });
         }
 
+        function submitOrder() {
+            generatePDF();
+            generateOrder();
+        }
+
         function generateOrder() {
             let message = "Purchase Order:\n\n";
             
@@ -393,7 +401,8 @@
 
             doc.setFontSize(12);
             doc.setTextColor(0, 0, 0);
-            doc.text(`Branch: Al-Nafl`, 10, y);
+            const branch = document.getElementById('branch').value;
+            doc.text(`Branch: ${branch}`, 10, y);
             y += 10;
             doc.text(`Date: ${new Date().toLocaleDateString()}`, 10, y);
             y += 10;
